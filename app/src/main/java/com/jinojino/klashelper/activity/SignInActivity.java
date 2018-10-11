@@ -13,7 +13,14 @@ import android.widget.Toast;
 
 import com.jinojino.klashelper.DB.DBHelper;
 import com.jinojino.klashelper.R;
+import com.jinojino.klashelper.Thread.HttpThread;
+import com.jinojino.klashelper.Thread.LoginThread;
+import com.jinojino.klashelper.java.Work;
 import com.jinojino.klashelper.receiver.AlarmReceiver;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -25,6 +32,7 @@ public class SignInActivity extends AppCompatActivity {
     String id="";
     String pw="";
     String msg="";
+    String result="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,28 +89,62 @@ public class SignInActivity extends AppCompatActivity {
                 String id_in = idInput.getText().toString();
                 String pw_in = pwInput.getText().toString();
 
-                if(id.compareTo(id_in)==0 && pw.compareTo(pw_in)==0){
-                    msg = "로그인 성공!";
+                LoginThread l = new LoginThread(id, pw);
+                l.start();
+                try {
+                    l.join();
+                } catch(Exception e) {
+                    e.printStackTrace();
                 }
-                else{
-                    dbHelper.deleteAll();
-                    dbHelper.setUser(id_in, pw_in);
-                    msg = "화면을 내려 과제 목록을 갱신해주세요.";
+                String response = l.getResult();
+
+                try{
+                    JSONObject jobject = new JSONObject(response);
+                    String m_status = jobject.getString("status");
+                    int m_flag = jobject.getInt("flag");
+
+                    if(m_flag==1 && m_status=="Sucess")
+                    {
+                        result = "Login_Sucess";
+                    }
+                    else
+                    {
+                        result = "Login_Fail";
+                    }
+
+                    if(result == "Login_Sucess")
+                    {
+                        if(id.compareTo(id_in)==0 && pw.compareTo(pw_in)==0){
+                            msg = "로그인 성공!";
+                        }
+                        else{
+                            dbHelper.deleteAll();
+                            dbHelper.setUser(id_in, pw_in);
+                            msg = "화면을 내려 과제 목록을 갱신해주세요.";
+                        }
+
+                        editor = data.edit();
+                        editor.putString("id", idInput.getText().toString());
+                        editor.putString("pw", pwInput.getText().toString());
+                        editor.commit();
+
+                        //다음 화면으로
+                        Intent intent= new Intent(SignInActivity.this, MainActivity.class);
+                        Toast.makeText(getApplicationContext(),msg, Toast.LENGTH_LONG).show();
+                        startActivity(intent);
+                    }
+                    else if(result == "Login_Fail")
+                    {
+                        msg = "로그인 실패";
+                        Toast.makeText(getApplicationContext(),msg, Toast.LENGTH_LONG).show();
+                    }
+
                 }
-
-                editor = data.edit();
-                editor.putString("id", idInput.getText().toString());
-                editor.putString("pw", pwInput.getText().toString());
-                editor.commit();
-
-                //다음 화면으로
-                Intent intent= new Intent(SignInActivity.this, MainActivity.class);
-                Toast.makeText(getApplicationContext(),msg, Toast.LENGTH_LONG).show();
-                startActivity(intent);
-
+                catch(JSONException e){
+                    e.printStackTrace();
+                }
             }
         });
 
     }
 }
-

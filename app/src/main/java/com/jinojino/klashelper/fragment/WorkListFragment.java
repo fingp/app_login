@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.jinojino.klashelper.DB.DBHelper;
 import com.jinojino.klashelper.R;
 import com.jinojino.klashelper.Thread.HttpThread;
+import com.jinojino.klashelper.Thread.LoginThread;
 import com.jinojino.klashelper.activity.AlarmSettingActivity;
 import com.jinojino.klashelper.adapter.ListViewAdapter;
 import com.jinojino.klashelper.java.ListViewWork;
