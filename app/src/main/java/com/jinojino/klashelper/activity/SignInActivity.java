@@ -32,7 +32,7 @@ public class SignInActivity extends AppCompatActivity {
     String id="";
     String pw="";
     String msg="";
-    String result="";
+    int flag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +81,7 @@ public class SignInActivity extends AppCompatActivity {
 //
 //                }
 
-                if(data.contains("id") || data.contains("pw")){
+                if(data.contains("id") && data.contains("pw")){
                     id = data.getString("id","");
                     pw = data.getString("pw", "");
                 }
@@ -89,7 +89,7 @@ public class SignInActivity extends AppCompatActivity {
                 String id_in = idInput.getText().toString();
                 String pw_in = pwInput.getText().toString();
 
-                LoginThread l = new LoginThread(id, pw);
+                LoginThread l = new LoginThread(id_in, pw_in);
                 l.start();
                 try {
                     l.join();
@@ -102,17 +102,17 @@ public class SignInActivity extends AppCompatActivity {
                     JSONObject jobject = new JSONObject(response);
                     String m_status = jobject.getString("status");
                     int m_flag = jobject.getInt("flag");
-
-                    if(m_flag==1 && m_status=="Sucess")
+                    Log.d("로그", ""+m_flag);
+                    if(m_flag==1)
                     {
-                        result = "Login_Sucess";
+                        flag=1;
                     }
                     else
                     {
-                        result = "Login_Fail";
+                        flag=0;
                     }
 
-                    if(result == "Login_Sucess")
+                    if(flag == 1)
                     {
                         if(id.compareTo(id_in)==0 && pw.compareTo(pw_in)==0){
                             msg = "로그인 성공!";
@@ -133,7 +133,7 @@ public class SignInActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(),msg, Toast.LENGTH_LONG).show();
                         startActivity(intent);
                     }
-                    else if(result == "Login_Fail")
+                    else if(flag==0)
                     {
                         msg = "로그인 실패";
                         Toast.makeText(getApplicationContext(),msg, Toast.LENGTH_LONG).show();
